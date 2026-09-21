@@ -1,0 +1,4 @@
+{
+  agents: { defaults: { sandbox: { mode: "off" } } },
+  tools: { allow: ["read", "exec", "process"] },
+}
