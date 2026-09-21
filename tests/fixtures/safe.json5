@@ -1,0 +1,9 @@
+{
+  agents: {
+    defaults: {
+      model: { primary: "ollama/llama3.2:3b", fallbacks: [] },
+      sandbox: { mode: "all", scope: "agent", workspaceAccess: "none" },
+    },
+  },
+  tools: { allow: ["read"] },
+}
