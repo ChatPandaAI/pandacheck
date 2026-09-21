@@ -1,0 +1,7 @@
+{
+  agents: {
+    defaults: {
+      sandbox: { mode: "all", scope: "shared", workspaceAccess: "none" },
+    },
+  },
+}
