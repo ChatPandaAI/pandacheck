@@ -1,0 +1,11 @@
+{
+  agents: {
+    defaults: {
+      model: {
+        primary: "ollama/llama3.2:3b",
+        fallbacks: ["openai/gpt-5.6-luna"],
+      },
+      sandbox: { mode: "all", scope: "agent" },
+    },
+  },
+}
