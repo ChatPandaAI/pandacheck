@@ -20,51 +20,51 @@ PandaCheck is intended to stay:
 
 ## Current target
 
-The first target is the OpenClaw JSON5 configuration format (\`openclaw.json\`). OpenClaw supports model fallback chains, sandbox configuration, tool policies, and multi-agent sandbox scopes; PandaCheck starts with those documented boundaries.
+The first target is the OpenClaw JSON5 configuration format (`openclaw.json`). OpenClaw supports model fallback chains, sandbox configuration, tool policies, and multi-agent sandbox scopes; PandaCheck starts with those documented boundaries.
 
 ## First rules
 
 | Rule | Severity | Detects |
 | --- | --- | --- |
-| \`PC001\` | warning | local primary model with a non-local fallback |
-| \`PC002\` | high | explicitly allowed dangerous tools while default sandboxing is off |
-| \`PC003\` | warning | shared sandbox scope across agents |
+| `PC001` | warning | local primary model with a non-local fallback |
+| `PC002` | high | explicitly allowed dangerous tools while default sandboxing is off |
+| `PC003` | warning | shared sandbox scope across agents |
 
 These rules are deliberately narrow. PandaCheck should prefer a small number of defensible findings over a large number of guesses.
 
 ## Install for development
 
-\`\`\`bash
+```bash
 python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\\Scripts\\activate
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
 pip install -e ".[dev]"
-\`\`\`
+```
 
 ## Run
 
-\`\`\`bash
+```bash
 pandacheck scan ~/.openclaw/openclaw.json
-\`\`\`
+```
 
 Machine-readable output:
 
-\`\`\`bash
+```bash
 pandacheck scan ~/.openclaw/openclaw.json --format json
-\`\`\`
+```
 
 Exit codes:
 
-- \`0\` — scan completed with no findings
-- \`1\` — scan completed with one or more findings
-- \`2\` — invalid invocation or unreadable/unparseable configuration
+- `0` — scan completed with no findings
+- `1` — scan completed with one or more findings
+- `2` — invalid invocation or unreadable/unparseable configuration
 
 ## Example
 
-\`\`\`text
+```text
 [WARNING] PC001  Local model can fall back to a remote provider
           The primary model is local, but at least one configured fallback appears to use a non-local provider...
           Evidence: {"primary": "ollama/llama3.2:3b", "remote_fallbacks": ["openai/gpt-5.6-luna"]}
-\`\`\`
+```
 
 ## Development principles
 
@@ -83,7 +83,7 @@ The core scanner will remain useful and public. If PandaCheck eventually has pai
 
 ## License
 
-Apache-2.0. See \`LICENSE\`.
+Apache-2.0. See `LICENSE`.
 
 ---
 
