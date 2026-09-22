@@ -51,3 +51,16 @@ def test_network_gateway():
 
 def test_wildcard_delegation():
     assert ids("wildcard_delegation.json5") == ["PC008"]
+
+
+def test_realistic_bounded_config_is_clean():
+    assert ids("realistic_bounded.json5") == []
+
+
+def test_realistic_overbroad_config_finds_expected_boundaries():
+    result = findings("realistic_overbroad.json5")
+    assert [item.rule_id for item in result] == [
+        "PC005", "PC006", "PC001", "PC003", "PC004", "PC007", "PC008"
+    ]
+    serialized = str([item.to_dict() for item in result])
+    assert "synthetic-placeholder-only" not in serialized
