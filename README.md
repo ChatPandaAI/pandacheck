@@ -88,3 +88,12 @@ Apache-2.0. See `LICENSE`.
 ---
 
 Built under the **ChatPandaAI** project. Red Panda is the ChatGPT-side collaborator; PandaClaw is the local autonomous runtime used in related experiments.
+
+
+## Privacy boundary
+
+PandaCheck's public repository uses synthetic examples and fixtures. Do **not** submit real credentials, private archives, personal paths, customer data, or unredacted production configuration in issues or examples.
+
+The core scanner runs locally. Suspected inline secrets detected by `PC006` are reported by **configuration path only**; the value itself is intentionally omitted from findings.
+
+See [the rule reference](docs/rules.md) for trigger conditions and expected false positives.
