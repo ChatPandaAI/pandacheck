@@ -1,0 +1,27 @@
+name: release-candidate
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --upgrade pip
+      - run: pip install -e ".[dev]"
+      - run: pytest -q
+      - run: python -m build
+      - run: python -m twine check dist/*
+      - run: python -m venv /tmp/pandacheck-install
+      - run: /tmp/pandacheck-install/bin/pip install dist/*.whl
+      - run: /tmp/pandacheck-install/bin/pandacheck --version
+      - run: /tmp/pandacheck-install/bin/pandacheck scan tests/fixtures/safe.json5
