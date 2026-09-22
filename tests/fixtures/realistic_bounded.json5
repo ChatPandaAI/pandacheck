@@ -1,0 +1,12 @@
+{
+  // Synthetic bounded local-agent deployment. No real credentials or private paths.
+  agents: {
+    defaults: {
+      model: { primary: "ollama/qwen3:8b", fallbacks: [] },
+      sandbox: { mode: "all", scope: "agent", workspaceAccess: "ro" },
+      subagents: { allowAgents: ["docs-helper", "test-helper"] },
+    },
+  },
+  tools: { allow: ["read"] },
+  gateway: { bind: "127.0.0.1" },
+}
