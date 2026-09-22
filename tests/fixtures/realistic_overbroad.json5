@@ -1,0 +1,15 @@
+{
+  // Synthetic intentionally risky deployment used to dogfood multiple rules.
+  agents: {
+    defaults: {
+      model: { primary: "ollama/qwen3:8b", fallbacks: ["openai/gpt-5.6-luna"] },
+      sandbox: { mode: "all", scope: "shared", workspaceAccess: "rw" },
+      subagents: { allowAgents: ["*"] },
+    },
+  },
+  tools: { allow: ["*"] },
+  gateway: {
+    bind: "0.0.0.0",
+    auth: { token: "synthetic-placeholder-only" },
+  },
+}
