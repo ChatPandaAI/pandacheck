@@ -9,6 +9,12 @@ from pandacheck.config import ConfigError, load_config
 from pandacheck.models import Severity
 from pandacheck.scanner import scan_config, serialize_findings
 
+FAIL_THRESHOLDS = {
+    "info": Severity.INFO,
+    "warning": Severity.WARNING,
+    "high": Severity.HIGH,
+}
+
 
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
@@ -18,9 +24,15 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    scan = subparsers.add_parser("scan", help="Scan an OpenClaw-style JSON5 config")
-    scan.add_argument("path", help="Path to openclaw.json or another JSON5 config")
+    scan = subparsers.add_parser("scan", help="Scan an agent configuration")
+    scan.add_argument("path", help="Path to an adapter-supported configuration file")
     scan.add_argument("--format", choices=("human", "json"), default="human")
+    scan.add_argument(
+        "--fail-on",
+        choices=("info", "warning", "high", "never"),
+        default="info",
+        help="Return exit code 1 only when a finding meets this severity threshold (default: info).",
+    )
     return parser
 
 
@@ -42,6 +54,13 @@ def _print_human(findings) -> None:
     print(f"PandaCheck: {len(findings)} finding(s) — {high} high, {warning} warning, {info} info")
 
 
+def _should_fail(findings, threshold: str) -> bool:
+    if threshold == "never":
+        return False
+    minimum = FAIL_THRESHOLDS[threshold]
+    return any(item.severity >= minimum for item in findings)
+
+
 def main(argv: list[str] | None = None) -> int:
     args = _build_parser().parse_args(argv)
 
@@ -56,11 +75,20 @@ def main(argv: list[str] | None = None) -> int:
 
     findings = scan_config(config)
     if args.format == "json":
-        print(json.dumps({"version": __version__, "findings": serialize_findings(findings)}, indent=2))
+        print(
+            json.dumps(
+                {
+                    "version": __version__,
+                    "fail_on": args.fail_on,
+                    "findings": serialize_findings(findings),
+                },
+                indent=2,
+            )
+        )
     else:
         _print_human(findings)
 
-    return 1 if findings else 0
+    return 1 if _should_fail(findings, args.fail_on) else 0
 
 
 if __name__ == "__main__":
