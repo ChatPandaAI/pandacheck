@@ -4,7 +4,7 @@
 
 PandaCheck is an early open-source project from [ChatPandaAI](https://github.com/ChatPandaAI). It turns agent-governance expectations into checks that can run repeatedly against configuration before risky changes reach a live agent.
 
-> Current release: **v0.1.0 pre-alpha**. PandaCheck is not a compliance certification and does not prove that an agent is safe.
+> Current release: **v0.1.0 pre-alpha**. `main` is now **v0.2.0.dev0**. PandaCheck is not a compliance certification and does not prove that an agent is safe.
 
 ## What PandaCheck is becoming
 
@@ -59,11 +59,27 @@ Machine-readable output:
 pandacheck scan ~/.openclaw/openclaw.json --format json
 ```
 
-Exit codes:
+Exit codes in v0.1.0:
 
 - `0` — scan completed with no findings
 - `1` — scan completed with one or more findings
 - `2` — invalid invocation or unreadable/unparseable configuration
+
+## v0.2 development on `main`
+
+The development branch already adds:
+
+- explicit adapter metadata (`--adapter openclaw`);
+- versioned JSON output schema;
+- configurable CI thresholds.
+
+Example CI gate:
+
+```bash
+pandacheck scan openclaw.json --fail-on high
+```
+
+That command still reports warnings, but exits nonzero only if a **high** finding is present.
 
 ## v0.1 baseline rules
 
@@ -111,14 +127,14 @@ pytest -q
 
 ## Roadmap
 
-The next milestone moves from an OpenClaw-specific scanner toward portable policy-as-code:
+The v0.2 milestone moves from an OpenClaw-specific scanner toward portable policy-as-code:
 
-- configurable CI severity thresholds;
+- ✅ configurable CI severity thresholds;
 - project policy files;
-- adapter architecture for multiple agent runtimes;
+- ✅ adapter architecture for multiple agent runtimes;
 - config-diff regression checks;
 - reusable policy packs;
-- stable machine-readable finding schema.
+- ✅ stable machine-readable finding schema.
 
 If PandaCheck eventually has paid offerings, the intent is to charge for maintained convenience — richer remediation, maintained policy packs, integrations, continuous scanning, team workflows, or support — not to intentionally cripple the open-source core.
 
