@@ -22,7 +22,7 @@ def test_cli_clean_exit(capsys):
     assert code == 0
     output = capsys.readouterr().out
     assert "PandaCheck adapter: openclaw" in output
-    assert "No PandaCheck findings" in output
+    assert "No active PandaCheck findings" in output
 
 
 def test_cli_high_threshold_allows_warning(capsys):
