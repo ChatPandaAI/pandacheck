@@ -3,14 +3,21 @@ from __future__ import annotations
 from collections.abc import Iterable
 from typing import Any
 
+from pandacheck.adapters import ADAPTERS
 from pandacheck.models import Finding
-from pandacheck.rules import OPENCLAW_RULES
 
 
-def scan_config(config: dict[str, Any]) -> list[Finding]:
-    findings: list[Finding] = []
-    for rule in OPENCLAW_RULES:
-        findings.extend(rule(config))
+class AdapterError(ValueError):
+    pass
+
+
+def scan_config(config: dict[str, Any], adapter_name: str = "openclaw") -> list[Finding]:
+    try:
+        adapter = ADAPTERS[adapter_name]
+    except KeyError as exc:
+        raise AdapterError(f"Unknown adapter: {adapter_name}") from exc
+
+    findings = adapter.scan(config)
     return sorted(findings, key=lambda item: (-int(item.severity), item.rule_id))
 
 
