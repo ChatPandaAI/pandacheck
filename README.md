@@ -1,46 +1,53 @@
 # 🐼 PandaCheck
 
-**Local-first checks for risky AI-agent configuration boundaries.**
+**Portable policy checks for AI-agent configuration. Local-first, deterministic, and CI-friendly.**
 
-PandaCheck is an early open-source scanner from [ChatPandaAI](https://github.com/ChatPandaAI). It turns security and governance advice into deterministic checks you can run repeatedly against real agent configuration.
+PandaCheck is an early open-source project from [ChatPandaAI](https://github.com/ChatPandaAI). It turns agent-governance expectations into checks that can run repeatedly against configuration before risky changes reach a live agent.
 
-> Status: **pre-alpha / v0.1 development**. PandaCheck is not a compliance certification and does not prove that an agent is safe.
+> Current release: **v0.1.0 pre-alpha**. PandaCheck is not a compliance certification and does not prove that an agent is safe.
+
+## What PandaCheck is becoming
+
+PandaCheck started as an OpenClaw configuration scanner. OpenClaw now ships a comprehensive native `openclaw security audit`, so PandaCheck is **not** trying to replace it.
+
+For OpenClaw runtime security, use the native audit first.
+
+PandaCheck's direction is broader:
+
+- portable **policy-as-code** for agent configurations;
+- deterministic checks that can run in CI before deployment;
+- project/team policy packs;
+- config-change regression checks;
+- consistent findings across multiple agent runtimes;
+- local-only operation for the core scanner.
+
+OpenClaw remains the first adapter because it gives us a real, documented configuration surface to test against.
+
+See [OpenClaw positioning and overlap](docs/openclaw.md).
 
 ## Why
 
-A good prompt can explain agent-security principles. A useful tool should do more: inspect a concrete configuration, identify specific risky boundaries, show the evidence that triggered each finding, and produce output that can be tested in CI.
+A good prompt can explain agent-security principles. A useful tool should do more: inspect concrete configuration, identify specific policy drift, show safe evidence, and return deterministic output that automation can act on.
 
 PandaCheck is intended to stay:
 
 - **local-first** — core scans run on your machine
-- **deterministic first** — no LLM is needed for baseline rules
-- **explainable** — every finding includes evidence and remediation
+- **deterministic first** — no LLM required for baseline checks
+- **explainable** — findings include evidence and remediation
 - **privacy-respecting** — no telemetry or config upload in the core scanner
-- **inspectable** — rules live in the public repository
+- **inspectable** — baseline rules live in the public repository
+- **portable** — policy should not be trapped inside one agent runtime
 
-## Current target
+## Try v0.1.0
 
-The first target is the OpenClaw JSON5 configuration format (`openclaw.json`). OpenClaw supports model fallback chains, sandbox configuration, tool policies, and multi-agent sandbox scopes; PandaCheck starts with those documented boundaries.
-
-## First rules
-
-| Rule | Severity | Detects |
-| --- | --- | --- |
-| `PC001` | warning | local primary model with a non-local fallback |
-| `PC002` | high | explicitly allowed dangerous tools while default sandboxing is off |
-| `PC003` | warning | shared sandbox scope across agents |
-
-These rules are deliberately narrow. PandaCheck should prefer a small number of defensible findings over a large number of guesses.
-
-## Install for development
+Python 3.11+:
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
-pip install -e ".[dev]"
+python -m pip install https://github.com/ChatPandaAI/pandacheck/archive/refs/tags/v0.1.0.tar.gz
+pandacheck --version
 ```
 
-## Run
+Scan an OpenClaw-style JSON5 config:
 
 ```bash
 pandacheck scan ~/.openclaw/openclaw.json
@@ -58,28 +65,70 @@ Exit codes:
 - `1` — scan completed with one or more findings
 - `2` — invalid invocation or unreadable/unparseable configuration
 
+## v0.1 baseline rules
+
+| Rule | Severity | Detects |
+| --- | --- | --- |
+| `PC001` | warning | local primary model with a non-local fallback |
+| `PC002` | high | dangerous tools explicitly allowed while default sandboxing is off |
+| `PC003` | warning | shared sandbox scope across agents |
+| `PC004` | warning | writable sandbox workspace |
+| `PC005` | high | wildcard tool allow-list |
+| `PC006` | high | possible inline secret values, without printing the value |
+| `PC007` | warning | gateway binding broader than loopback |
+| `PC008` | warning | wildcard agent delegation |
+
+These checks are deliberately narrow. PandaCheck should prefer a small number of defensible findings over a large number of guesses.
+
+See [the rule reference](docs/rules.md) for trigger conditions and legitimate-use/false-positive notes.
+
 ## Example
 
 ```text
 [WARNING] PC001  Local model can fall back to a remote provider
-          The primary model is local, but at least one configured fallback appears to use a non-local provider...
+          The primary model is local, but a configured fallback appears non-local...
           Evidence: {"primary": "ollama/llama3.2:3b", "remote_fallbacks": ["openai/gpt-5.6-luna"]}
+```
+
+## Development
+
+```bash
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+pip install -e ".[dev]"
+pytest -q
 ```
 
 ## Development principles
 
 1. Findings must be tied to concrete configuration evidence.
-2. Every rule needs fixtures and deterministic tests.
-3. Rules should document expected false-positive conditions.
+2. Every baseline rule needs deterministic tests.
+3. Expected false positives must be documented.
 4. No config or secret leaves the machine during a core scan.
-5. We do not label a system "secure" just because PandaCheck is quiet.
+5. A quiet scan must never be described as proof that a system is secure.
 6. Public examples must use synthetic or explicitly cleared data.
+7. Framework-native security tooling should be recommended when it is stronger for that framework.
 
 ## Roadmap
 
-Near-term candidates include narrow checks for filesystem scope, cross-agent/session visibility, privileged execution, secret placement, unrestricted delegation, browser/network exposure, and recurring autonomous jobs without explicit operational bounds.
+The next milestone moves from an OpenClaw-specific scanner toward portable policy-as-code:
 
-The core scanner will remain useful and public. If PandaCheck eventually has paid offerings, the intent is to charge for maintained convenience—such as richer remediation, policy packs, integrations, continuous scanning, team workflows, or support—not to intentionally cripple the open-source core.
+- configurable CI severity thresholds;
+- project policy files;
+- adapter architecture for multiple agent runtimes;
+- config-diff regression checks;
+- reusable policy packs;
+- stable machine-readable finding schema.
+
+If PandaCheck eventually has paid offerings, the intent is to charge for maintained convenience — richer remediation, maintained policy packs, integrations, continuous scanning, team workflows, or support — not to intentionally cripple the open-source core.
+
+## Privacy boundary
+
+PandaCheck's public repository uses synthetic examples and fixtures. Do **not** submit real credentials, private archives, personal paths, customer data, or unredacted production configuration in issues or examples.
+
+The core scanner runs locally. Suspected inline secrets detected by `PC006` are reported by **configuration path only**; the value itself is intentionally omitted from findings.
+
+See [SECURITY.md](SECURITY.md) and [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
@@ -88,12 +137,3 @@ Apache-2.0. See `LICENSE`.
 ---
 
 Built under the **ChatPandaAI** project. Red Panda is the ChatGPT-side collaborator; PandaClaw is the local autonomous runtime used in related experiments.
-
-
-## Privacy boundary
-
-PandaCheck's public repository uses synthetic examples and fixtures. Do **not** submit real credentials, private archives, personal paths, customer data, or unredacted production configuration in issues or examples.
-
-The core scanner runs locally. Suspected inline secrets detected by `PC006` are reported by **configuration path only**; the value itself is intentionally omitted from findings.
-
-See [the rule reference](docs/rules.md) for trigger conditions and expected false positives.
