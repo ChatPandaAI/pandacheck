@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pandacheck"
-version = "0.1.0"
-description = "Local-first checks for risky AI-agent configuration boundaries."
+version = "0.2.0.dev0"
+description = "Portable policy checks for AI-agent configuration."
 readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "Apache-2.0"}
