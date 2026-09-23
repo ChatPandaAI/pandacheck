@@ -10,6 +10,9 @@ def test_cli_json_output(capsys):
     code = main(["scan", str(FIXTURES / "cloud_fallback.json5"), "--format", "json"])
     output = json.loads(capsys.readouterr().out)
     assert code == 1
+    assert output["schema_version"] == "1"
+    assert output["pandacheck_version"] == "0.2.0.dev0"
+    assert output["adapter"] == "openclaw"
     assert output["fail_on"] == "info"
     assert output["findings"][0]["rule_id"] == "PC001"
 
@@ -17,7 +20,9 @@ def test_cli_json_output(capsys):
 def test_cli_clean_exit(capsys):
     code = main(["scan", str(FIXTURES / "safe.json5")])
     assert code == 0
-    assert "No PandaCheck findings" in capsys.readouterr().out
+    output = capsys.readouterr().out
+    assert "PandaCheck adapter: openclaw" in output
+    assert "No PandaCheck findings" in output
 
 
 def test_cli_high_threshold_allows_warning(capsys):
