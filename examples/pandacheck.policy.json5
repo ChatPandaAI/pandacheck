@@ -1,0 +1,19 @@
+{
+  // PandaCheck project policy, schema version 1.
+  version: 1,
+
+  // Adapter used when --adapter is not supplied.
+  adapter: "openclaw",
+
+  // CI fails only for active findings at or above this severity.
+  fail_on: "high",
+
+  // Accepted findings stay visible in output with their reason.
+  // Avoid broad permanent exceptions; make the reason specific and reviewable.
+  exceptions: [
+    // {
+    //   rule: "PC001",
+    //   reason: "Approved remote fallback for this project's availability requirement."
+    // }
+  ]
+}
