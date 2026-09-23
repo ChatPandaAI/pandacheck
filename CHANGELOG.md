@@ -2,6 +2,18 @@
 
 All notable changes to PandaCheck will be documented here.
 
+## [Unreleased] - v0.2 development
+
+### Added
+
+- adapter registry and explicit adapter metadata;
+- versioned JSON output schema;
+- configurable CI severity thresholds via `--fail-on`;
+- JSON5 project policy files with reason-required exceptions;
+- auditable suppressed findings instead of silent ignores;
+- regression `diff` mode that classifies introduced, resolved, and unchanged findings;
+- regression CI failure based on newly introduced findings only.
+
 ## [0.1.0] - 2026-09-21
 
 First public pre-alpha milestone.
