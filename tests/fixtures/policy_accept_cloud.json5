@@ -1,0 +1,11 @@
+{
+  version: 1,
+  adapter: "openclaw",
+  fail_on: "high",
+  exceptions: [
+    {
+      rule: "PC001",
+      reason: "Approved availability fallback for this project."
+    }
+  ]
+}

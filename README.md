@@ -67,11 +67,13 @@ Exit codes in v0.1.0:
 
 ## v0.2 development on `main`
 
-The development branch already adds:
+The development branch now adds:
 
 - explicit adapter metadata (`--adapter openclaw`);
 - versioned JSON output schema;
-- configurable CI thresholds.
+- configurable CI thresholds;
+- project policy files with reviewable, reason-required exceptions;
+- regression mode that fails only on newly introduced findings.
 
 Example CI gate:
 
@@ -79,7 +81,19 @@ Example CI gate:
 pandacheck scan openclaw.json --fail-on high
 ```
 
-That command still reports warnings, but exits nonzero only if a **high** finding is present.
+Project policy:
+
+```bash
+pandacheck scan openclaw.json --policy examples/pandacheck.policy.json5
+```
+
+Regression gate:
+
+```bash
+pandacheck diff baseline.json5 candidate.json5 --fail-on high
+```
+
+The diff command can tolerate known historical findings while blocking newly introduced high-severity drift. See [project policy](docs/policy.md) and [regression mode](docs/regression.md).
 
 ## v0.1 baseline rules
 
@@ -130,9 +144,9 @@ pytest -q
 The v0.2 milestone moves from an OpenClaw-specific scanner toward portable policy-as-code:
 
 - ✅ configurable CI severity thresholds;
-- project policy files;
+- ✅ project policy files with explicit exceptions;
 - ✅ adapter architecture for multiple agent runtimes;
-- config-diff regression checks;
+- ✅ config-diff regression checks;
 - reusable policy packs;
 - ✅ stable machine-readable finding schema.
 
