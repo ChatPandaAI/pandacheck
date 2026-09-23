@@ -56,3 +56,79 @@ def test_cli_never_threshold_never_fails_on_findings(capsys):
     ])
     assert code == 0
     assert "PC005" in capsys.readouterr().out
+
+
+def test_cli_policy_suppresses_with_reason(capsys):
+    code = main([
+        "scan",
+        str(FIXTURES / "cloud_fallback.json5"),
+        "--policy",
+        str(FIXTURES / "policy_accept_cloud.json5"),
+        "--format",
+        "json",
+    ])
+    output = json.loads(capsys.readouterr().out)
+    assert code == 0
+    assert output["findings"] == []
+    assert output["suppressed_findings"][0]["finding"]["rule_id"] == "PC001"
+    assert "Approved availability fallback" in output["suppressed_findings"][0]["reason"]
+
+
+def test_cli_policy_adapter_conflict_is_error(capsys):
+    code = main([
+        "scan",
+        str(FIXTURES / "safe.json5"),
+        "--policy",
+        str(FIXTURES / "policy_accept_cloud.json5"),
+        "--adapter",
+        "openclaw",
+    ])
+    assert code == 0
+
+
+def test_cli_diff_fails_only_on_new_high_findings(capsys):
+    code = main([
+        "diff",
+        str(FIXTURES / "safe.json5"),
+        str(FIXTURES / "realistic_overbroad.json5"),
+        "--fail-on",
+        "high",
+        "--format",
+        "json",
+    ])
+    output = json.loads(capsys.readouterr().out)
+    assert code == 1
+    assert output["mode"] == "diff"
+    assert {item["rule_id"] for item in output["introduced"]} >= {"PC005", "PC006"}
+
+
+def test_cli_diff_passes_when_risk_is_only_resolved(capsys):
+    code = main([
+        "diff",
+        str(FIXTURES / "realistic_overbroad.json5"),
+        str(FIXTURES / "safe.json5"),
+        "--fail-on",
+        "high",
+        "--format",
+        "json",
+    ])
+    output = json.loads(capsys.readouterr().out)
+    assert code == 0
+    assert output["introduced"] == []
+    assert len(output["resolved"]) == 7
+
+
+def test_cli_diff_policy_keeps_exception_visible(capsys):
+    code = main([
+        "diff",
+        str(FIXTURES / "safe.json5"),
+        str(FIXTURES / "cloud_fallback.json5"),
+        "--policy",
+        str(FIXTURES / "policy_accept_cloud.json5"),
+        "--format",
+        "json",
+    ])
+    output = json.loads(capsys.readouterr().out)
+    assert code == 0
+    assert output["introduced"] == []
+    assert output["candidate_suppressed_findings"][0]["finding"]["rule_id"] == "PC001"
