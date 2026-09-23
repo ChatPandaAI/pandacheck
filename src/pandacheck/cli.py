@@ -5,9 +5,12 @@ import json
 import sys
 
 from pandacheck import __version__
+from pandacheck.adapters import ADAPTERS
 from pandacheck.config import ConfigError, load_config
 from pandacheck.models import Severity
 from pandacheck.scanner import scan_config, serialize_findings
+
+SCHEMA_VERSION = "1"
 
 FAIL_THRESHOLDS = {
     "info": Severity.INFO,
@@ -26,6 +29,12 @@ def _build_parser() -> argparse.ArgumentParser:
 
     scan = subparsers.add_parser("scan", help="Scan an agent configuration")
     scan.add_argument("path", help="Path to an adapter-supported configuration file")
+    scan.add_argument(
+        "--adapter",
+        choices=tuple(sorted(ADAPTERS)),
+        default="openclaw",
+        help="Configuration adapter to use (default: openclaw).",
+    )
     scan.add_argument("--format", choices=("human", "json"), default="human")
     scan.add_argument(
         "--fail-on",
@@ -36,7 +45,8 @@ def _build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _print_human(findings) -> None:
+def _print_human(findings, adapter_name: str) -> None:
+    print(f"PandaCheck adapter: {adapter_name}")
     if not findings:
         print("✓ No PandaCheck findings.")
         return
@@ -73,12 +83,14 @@ def main(argv: list[str] | None = None) -> int:
         print(f"pandacheck: {exc}", file=sys.stderr)
         return 2
 
-    findings = scan_config(config)
+    findings = scan_config(config, adapter_name=args.adapter)
     if args.format == "json":
         print(
             json.dumps(
                 {
-                    "version": __version__,
+                    "schema_version": SCHEMA_VERSION,
+                    "pandacheck_version": __version__,
+                    "adapter": args.adapter,
                     "fail_on": args.fail_on,
                     "findings": serialize_findings(findings),
                 },
@@ -86,7 +98,7 @@ def main(argv: list[str] | None = None) -> int:
             )
         )
     else:
-        _print_human(findings)
+        _print_human(findings, args.adapter)
 
     return 1 if _should_fail(findings, args.fail_on) else 0
 
