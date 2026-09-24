@@ -11,7 +11,7 @@ def test_cli_json_output(capsys):
     output = json.loads(capsys.readouterr().out)
     assert code == 1
     assert output["schema_version"] == "1"
-    assert output["pandacheck_version"] == "0.2.0.dev0"
+    assert output["pandacheck_version"] == "0.2.0"
     assert output["adapter"] == "openclaw"
     assert output["fail_on"] == "info"
     assert output["findings"][0]["rule_id"] == "PC001"
