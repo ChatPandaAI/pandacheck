@@ -4,7 +4,7 @@
 
 PandaCheck is an early open-source project from [ChatPandaAI](https://github.com/ChatPandaAI). It turns agent-governance expectations into checks that can run repeatedly against configuration before risky changes reach a live agent.
 
-> Current release: **v0.1.0 pre-alpha**. `main` is now **v0.2.0.dev0**. PandaCheck is not a compliance certification and does not prove that an agent is safe.
+> Current release candidate: **v0.2.0 pre-alpha**. PandaCheck is not a compliance certification and does not prove that an agent is safe.
 
 ## What PandaCheck is becoming
 
@@ -38,12 +38,12 @@ PandaCheck is intended to stay:
 - **inspectable** — baseline rules live in the public repository
 - **portable** — policy should not be trapped inside one agent runtime
 
-## Try v0.1.0
+## Try PandaCheck
 
 Python 3.11+:
 
 ```bash
-python -m pip install https://github.com/ChatPandaAI/pandacheck/archive/refs/tags/v0.1.0.tar.gz
+python -m pip install https://github.com/ChatPandaAI/pandacheck/archive/refs/tags/v0.2.0.tar.gz
 pandacheck --version
 ```
 
@@ -65,9 +65,9 @@ Exit codes in v0.1.0:
 - `1` — scan completed with one or more findings
 - `2` — invalid invocation or unreadable/unparseable configuration
 
-## v0.2 development on `main`
+## v0.2 policy and regression
 
-The development branch now adds:
+v0.2 adds:
 
 - explicit adapter metadata (`--adapter openclaw`);
 - versioned JSON output schema;

@@ -2,7 +2,7 @@
 
 All notable changes to PandaCheck will be documented here.
 
-## [Unreleased] - v0.2 development
+## [0.2.0] - 2026-09-23
 
 ### Added
 
