@@ -11,6 +11,7 @@ from pandacheck.models import Severity
 from pandacheck.policy import Policy, PolicyError, SuppressedFinding, apply_policy, load_policy
 from pandacheck.regression import FindingDiff, diff_findings
 from pandacheck.scanner import scan_config, serialize_findings
+from pandacheck.starter import DEFAULT_POLICY_PATH, InitError, write_policy
 
 SCHEMA_VERSION = "1"
 
@@ -28,6 +29,31 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     subparsers = parser.add_subparsers(dest="command", required=True)
+
+    init = subparsers.add_parser("init", help="Create a starter PandaCheck policy file")
+    init.add_argument(
+        "path",
+        nargs="?",
+        default=DEFAULT_POLICY_PATH,
+        help=f"Policy path to create (default: {DEFAULT_POLICY_PATH}).",
+    )
+    init.add_argument(
+        "--adapter",
+        choices=tuple(sorted(ADAPTERS)),
+        default="openclaw",
+        help="Adapter to record in the starter policy (default: openclaw).",
+    )
+    init.add_argument(
+        "--fail-on",
+        choices=("info", "warning", "high", "never"),
+        default="high",
+        help="CI threshold to record in the starter policy (default: high).",
+    )
+    init.add_argument(
+        "--force",
+        action="store_true",
+        help="Overwrite an existing policy file.",
+    )
 
     scan = subparsers.add_parser("scan", help="Scan one agent configuration")
     scan.add_argument("path", help="Path to an adapter-supported configuration file")
@@ -219,6 +245,21 @@ def _run_diff(args, policy: Policy | None, adapter: str, fail_on: str) -> int:
 
 def main(argv: list[str] | None = None) -> int:
     args = _build_parser().parse_args(argv)
+
+    if args.command == "init":
+        try:
+            output = write_policy(
+                args.path,
+                adapter=args.adapter,
+                fail_on=args.fail_on,
+                force=args.force,
+            )
+        except (InitError, OSError) as exc:
+            print(f"pandacheck: {exc}", file=sys.stderr)
+            return 2
+        print(f"Created PandaCheck policy: {output}")
+        print(f"Next: pandacheck scan YOUR_CONFIG --policy {output}")
+        return 0
 
     try:
         policy = _load_policy(args.policy)

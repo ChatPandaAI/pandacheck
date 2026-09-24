@@ -1,0 +1,15 @@
+{
+  // Synthetic candidate that intentionally introduces risky drift.
+  agents: {
+    defaults: {
+      model: {
+        primary: "ollama/qwen3:8b",
+        fallbacks: ["openai/gpt-5.6-luna"],
+      },
+      sandbox: { mode: "all", scope: "agent", workspaceAccess: "ro" },
+      subagents: { allowAgents: ["docs-helper"] },
+    },
+  },
+  tools: { allow: ["*"] },
+  gateway: { bind: "127.0.0.1" },
+}

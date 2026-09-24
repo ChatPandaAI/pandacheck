@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 
 from pandacheck.cli import main
+from pandacheck.policy import load_policy
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -132,3 +133,42 @@ def test_cli_diff_policy_keeps_exception_visible(capsys):
     assert code == 0
     assert output["introduced"] == []
     assert output["candidate_suppressed_findings"][0]["finding"]["rule_id"] == "PC001"
+
+
+def test_cli_init_creates_loadable_policy(tmp_path, capsys):
+    path = tmp_path / "pandacheck.policy.json5"
+    code = main(["init", str(path)])
+    assert code == 0
+    policy = load_policy(path)
+    assert policy.adapter == "openclaw"
+    assert policy.fail_on == "high"
+    output = capsys.readouterr().out
+    assert "Created PandaCheck policy" in output
+    assert "pandacheck scan YOUR_CONFIG" in output
+
+
+def test_cli_init_refuses_overwrite_without_force(tmp_path, capsys):
+    path = tmp_path / "pandacheck.policy.json5"
+    path.write_text("keep me", encoding="utf-8")
+    code = main(["init", str(path)])
+    assert code == 2
+    assert path.read_text(encoding="utf-8") == "keep me"
+    assert "Refusing to overwrite" in capsys.readouterr().err
+
+
+def test_cli_init_force_overwrites(tmp_path, capsys):
+    path = tmp_path / "pandacheck.policy.json5"
+    path.write_text("old", encoding="utf-8")
+    code = main([
+        "init",
+        str(path),
+        "--adapter",
+        "openclaw",
+        "--fail-on",
+        "warning",
+        "--force",
+    ])
+    assert code == 0
+    policy = load_policy(path)
+    assert policy.fail_on == "warning"
+    capsys.readouterr()

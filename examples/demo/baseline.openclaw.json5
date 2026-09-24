@@ -1,0 +1,11 @@
+{
+  agents: {
+    defaults: {
+      model: { primary: "ollama/qwen3:8b", fallbacks: [] },
+      sandbox: { mode: "all", scope: "agent", workspaceAccess: "ro" },
+      subagents: { allowAgents: ["docs-helper"] },
+    },
+  },
+  tools: { allow: ["read"] },
+  gateway: { bind: "127.0.0.1" },
+}

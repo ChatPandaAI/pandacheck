@@ -1,0 +1,44 @@
+name: Adapter request
+description: Request support for another agent runtime or configuration format.
+title: "[adapter] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping choose PandaCheck's next adapter. Please use public documentation and do not paste private configuration or credentials.
+  - type: input
+    id: runtime
+    attributes:
+      label: Runtime / project
+      description: What agent runtime or framework should PandaCheck support?
+      placeholder: ExampleAgent
+    validations:
+      required: true
+  - type: input
+    id: docs
+    attributes:
+      label: Public configuration documentation
+      description: Link to the runtime's public configuration reference or schema.
+      placeholder: https://...
+    validations:
+      required: true
+  - type: textarea
+    id: drift
+    attributes:
+      label: Policy drift you want detected
+      description: Describe concrete configuration changes that should be visible or gateable in CI.
+      placeholder: "For example: introducing a cloud fallback or broadening tool access."
+    validations:
+      required: true
+  - type: textarea
+    id: native
+    attributes:
+      label: Native security / audit tooling
+      description: What first-party audit or policy tooling already exists, if any?
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy
+      options:
+        - label: I have not included credentials, private configuration, customer data, or other sensitive material.
+          required: true

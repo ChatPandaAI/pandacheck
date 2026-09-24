@@ -1,0 +1,41 @@
+name: PandaCheck
+
+on:
+  pull_request:
+    paths:
+      - "openclaw.json"
+      - "pandacheck.policy.json5"
+      - ".github/workflows/pandacheck.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  policy-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install PandaCheck
+        run: >-
+          python -m pip install
+          https://github.com/ChatPandaAI/pandacheck/archive/refs/tags/v0.2.0.tar.gz
+
+      - name: Load baseline config
+        shell: bash
+        run: |
+          git show "origin/${{ github.base_ref }}:openclaw.json" > /tmp/openclaw-baseline.json5
+
+      - name: Block newly introduced high-severity drift
+        run: >-
+          pandacheck diff
+          /tmp/openclaw-baseline.json5
+          openclaw.json
+          --policy pandacheck.policy.json5
+          --fail-on high

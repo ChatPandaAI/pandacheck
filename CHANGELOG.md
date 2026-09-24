@@ -2,6 +2,19 @@
 
 All notable changes to PandaCheck will be documented here.
 
+## [Unreleased]
+
+### Added
+
+- `pandacheck init` starter policy generator with overwrite protection;
+- synthetic 60-second regression demo;
+- copyable GitHub Actions pull-request workflow;
+- adapter request issue form.
+
+### Changed
+
+- README rewritten around install, policy initialization, regression, and CI adoption.
+
 ## [0.2.0] - 2026-09-23
 
 ### Added
