@@ -5,12 +5,12 @@
 Python 3.11+:
 
 ```bash
-python -m pip install https://github.com/ChatPandaAI/pandacheck/archive/refs/tags/v0.2.0.tar.gz
+python -m pip install https://github.com/ChatPandaAI/pandacheck/archive/refs/tags/v0.2.1.tar.gz
 ```
 
 PandaCheck is distributed through GitHub Releases, not PyPI.
 
-## Current release: scan and diff
+## Scan and diff
 
 ```bash
 pandacheck scan openclaw.json --fail-on high
@@ -20,17 +20,13 @@ pandacheck scan openclaw.json --fail-on high
 pandacheck diff baseline.json5 candidate.json5 --fail-on high
 ```
 
-## Next patch / source checkout: initialize policy
-
-The source tree includes `pandacheck init`, which will ship in the next patch release:
+## Initialize project policy
 
 ```bash
 pandacheck init
 ```
 
 It creates `pandacheck.policy.json5` and refuses to overwrite an existing file unless `--force` is supplied.
-
-Until that patch is tagged, you can copy [the example policy](../examples/pandacheck.policy.json5).
 
 ## GitHub Actions
 
