@@ -2,100 +2,95 @@
 
 **Portable policy checks for AI-agent configuration. Local-first, deterministic, and CI-friendly.**
 
-PandaCheck is an early open-source project from [ChatPandaAI](https://github.com/ChatPandaAI). It turns agent-governance expectations into checks that can run repeatedly against configuration before risky changes reach a live agent.
+PandaCheck turns agent-governance expectations into repeatable checks that can run before a risky configuration change reaches a live agent.
 
-> Current release candidate: **v0.2.0 pre-alpha**. PandaCheck is not a compliance certification and does not prove that an agent is safe.
+> Current release: **v0.2.0 pre-alpha**. The core scanner has no telemetry. A quiet scan is not a security certification.
 
-## What PandaCheck is becoming
+## Why use it?
 
-PandaCheck started as an OpenClaw configuration scanner. OpenClaw now ships a comprehensive native `openclaw security audit`, so PandaCheck is **not** trying to replace it.
+A framework-native audit can tell you whether a configuration looks unsafe **today**. PandaCheck adds a project-policy layer:
 
-For OpenClaw runtime security, use the native audit first.
+- fail CI only when a finding crosses your chosen severity threshold;
+- record explicit, reason-required exceptions instead of silently hiding them;
+- compare a baseline with a candidate and block **newly introduced** drift;
+- keep the same policy/output shape as more runtime adapters are added.
 
-PandaCheck's direction is broader:
+OpenClaw is the first adapter. For OpenClaw-specific runtime security, use `openclaw security audit` first; PandaCheck is meant to complement it, not replace it.
 
-- portable **policy-as-code** for agent configurations;
-- deterministic checks that can run in CI before deployment;
-- project/team policy packs;
-- config-change regression checks;
-- consistent findings across multiple agent runtimes;
-- local-only operation for the core scanner.
-
-OpenClaw remains the first adapter because it gives us a real, documented configuration surface to test against.
-
-See [OpenClaw positioning and overlap](docs/openclaw.md).
-
-## Why
-
-A good prompt can explain agent-security principles. A useful tool should do more: inspect concrete configuration, identify specific policy drift, show safe evidence, and return deterministic output that automation can act on.
-
-PandaCheck is intended to stay:
-
-- **local-first** — core scans run on your machine
-- **deterministic first** — no LLM required for baseline checks
-- **explainable** — findings include evidence and remediation
-- **privacy-respecting** — no telemetry or config upload in the core scanner
-- **inspectable** — baseline rules live in the public repository
-- **portable** — policy should not be trapped inside one agent runtime
-
-## Try PandaCheck
+## Install
 
 Python 3.11+:
 
 ```bash
 python -m pip install https://github.com/ChatPandaAI/pandacheck/archive/refs/tags/v0.2.0.tar.gz
-pandacheck --version
 ```
 
-Scan an OpenClaw-style JSON5 config:
+PandaCheck is currently distributed through **GitHub Releases, not PyPI**.
+
+## 60-second demo
+
+The repository includes a synthetic baseline and a candidate that deliberately adds wildcard tool access and a remote model fallback.
 
 ```bash
-pandacheck scan ~/.openclaw/openclaw.json
+git clone https://github.com/ChatPandaAI/pandacheck.git
+cd pandacheck
+python -m pip install -e .
+
+pandacheck init
+pandacheck diff \
+  examples/demo/baseline.openclaw.json5 \
+  examples/demo/candidate.openclaw.json5 \
+  --policy pandacheck.policy.json5
 ```
 
-Machine-readable output:
+Expected shape:
+
+```text
+Introduced findings: 2
+[HIGH   ] PC005  Tool allow-list contains a wildcard
+[WARNING] PC001  Local model can fall back to a remote provider
+```
+
+The starter policy defaults to `fail_on: "high"`, so the warning remains visible while the high-severity regression fails CI.
+
+## Use it on a project
+
+Create a starter policy:
 
 ```bash
-pandacheck scan ~/.openclaw/openclaw.json --format json
+pandacheck init
 ```
 
-Exit codes in v0.1.0:
-
-- `0` — scan completed with no findings
-- `1` — scan completed with one or more findings
-- `2` — invalid invocation or unreadable/unparseable configuration
-
-## v0.2 policy and regression
-
-v0.2 adds:
-
-- explicit adapter metadata (`--adapter openclaw`);
-- versioned JSON output schema;
-- configurable CI thresholds;
-- project policy files with reviewable, reason-required exceptions;
-- regression mode that fails only on newly introduced findings.
-
-Example CI gate:
+Review and commit `pandacheck.policy.json5`, then scan:
 
 ```bash
-pandacheck scan openclaw.json --fail-on high
+pandacheck scan openclaw.json --policy pandacheck.policy.json5
 ```
 
-Project policy:
+Compare a proposed change with a known baseline:
 
 ```bash
-pandacheck scan openclaw.json --policy examples/pandacheck.policy.json5
+pandacheck diff baseline.json5 candidate.json5 \
+  --policy pandacheck.policy.json5
 ```
 
-Regression gate:
+Machine-readable output is available with `--format json`.
 
-```bash
-pandacheck diff baseline.json5 candidate.json5 --fail-on high
-```
+See:
 
-The diff command can tolerate known historical findings while blocking newly introduced high-severity drift. See [project policy](docs/policy.md) and [regression mode](docs/regression.md).
+- [Project policy files](docs/policy.md)
+- [Regression mode](docs/regression.md)
+- [GitHub Actions](docs/github-actions.md)
+- [OpenClaw overlap and positioning](docs/openclaw.md)
+- [Rule reference](docs/rules.md)
 
-## v0.1 baseline rules
+## GitHub Actions
+
+A copyable pull-request workflow lives at [`examples/github-actions/pandacheck.yml`](examples/github-actions/pandacheck.yml).
+
+It reads the base branch's configuration and blocks only newly introduced active findings at or above the configured threshold.
+
+## Current OpenClaw rules
 
 | Rule | Severity | Detects |
 | --- | --- | --- |
@@ -108,17 +103,28 @@ The diff command can tolerate known historical findings while blocking newly int
 | `PC007` | warning | gateway binding broader than loopback |
 | `PC008` | warning | wildcard agent delegation |
 
-These checks are deliberately narrow. PandaCheck should prefer a small number of defensible findings over a large number of guesses.
+Rules are intentionally narrow and deterministic. PandaCheck prefers a small number of defensible findings over a large number of guesses.
 
-See [the rule reference](docs/rules.md) for trigger conditions and legitimate-use/false-positive notes.
+## Privacy boundary
 
-## Example
+PandaCheck's public examples and fixtures are synthetic.
 
-```text
-[WARNING] PC001  Local model can fall back to a remote provider
-          The primary model is local, but a configured fallback appears non-local...
-          Evidence: {"primary": "ollama/llama3.2:3b", "remote_fallbacks": ["openai/gpt-5.6-luna"]}
-```
+The core scanner does not upload configuration or use analytics. Finding evidence must be safe to print; for example, `PC006` reports credential-like **paths**, not secret values.
+
+Do **not** paste real credentials, personal archives, customer data, or unredacted private production configuration into public issues.
+
+See [SECURITY.md](SECURITY.md) and [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Want another runtime?
+
+Open an **adapter request** with:
+
+- the runtime/project name;
+- a link to its public configuration documentation;
+- the policy drift you want PandaCheck to detect;
+- whether the runtime already has native security/audit tooling.
+
+Demand will determine the next adapter rather than expanding support speculatively.
 
 ## Development
 
@@ -129,36 +135,14 @@ pip install -e ".[dev]"
 pytest -q
 ```
 
-## Development principles
+## Product principles
 
-1. Findings must be tied to concrete configuration evidence.
-2. Every baseline rule needs deterministic tests.
-3. Expected false positives must be documented.
-4. No config or secret leaves the machine during a core scan.
-5. A quiet scan must never be described as proof that a system is secure.
-6. Public examples must use synthetic or explicitly cleared data.
-7. Framework-native security tooling should be recommended when it is stronger for that framework.
-
-## Roadmap
-
-The v0.2 milestone moves from an OpenClaw-specific scanner toward portable policy-as-code:
-
-- ✅ configurable CI severity thresholds;
-- ✅ project policy files with explicit exceptions;
-- ✅ adapter architecture for multiple agent runtimes;
-- ✅ config-diff regression checks;
-- reusable policy packs;
-- ✅ stable machine-readable finding schema.
-
-If PandaCheck eventually has paid offerings, the intent is to charge for maintained convenience — richer remediation, maintained policy packs, integrations, continuous scanning, team workflows, or support — not to intentionally cripple the open-source core.
-
-## Privacy boundary
-
-PandaCheck's public repository uses synthetic examples and fixtures. Do **not** submit real credentials, private archives, personal paths, customer data, or unredacted production configuration in issues or examples.
-
-The core scanner runs locally. Suspected inline secrets detected by `PC006` are reported by **configuration path only**; the value itself is intentionally omitted from findings.
-
-See [SECURITY.md](SECURITY.md) and [CONTRIBUTING.md](CONTRIBUTING.md).
+1. Deterministic checks before LLM interpretation.
+2. Accepted risk stays visible and requires a reason.
+3. Regression mode should let teams prevent new risk without erasing all historical debt first.
+4. Framework-native security tooling should be recommended when it is stronger.
+5. Public fixtures stay synthetic.
+6. The open-source core should remain useful; future paid value, if any, should come from maintained convenience, integrations, workflow, and support.
 
 ## License
 
