@@ -4,7 +4,7 @@
 
 PandaCheck turns agent-governance expectations into repeatable checks that can run before a risky configuration change reaches a live agent.
 
-> Current release: **v0.2.0 pre-alpha**. The core scanner has no telemetry. A quiet scan is not a security certification.
+> Current release: **v0.2.1 pre-alpha**. The core scanner has no telemetry. A quiet scan is not a security certification.
 
 ## Why use it?
 
@@ -22,7 +22,7 @@ OpenClaw is the first adapter. For OpenClaw-specific runtime security, use `open
 Python 3.11+:
 
 ```bash
-python -m pip install https://github.com/ChatPandaAI/pandacheck/archive/refs/tags/v0.2.0.tar.gz
+python -m pip install https://github.com/ChatPandaAI/pandacheck/archive/refs/tags/v0.2.1.tar.gz
 ```
 
 PandaCheck is currently distributed through **GitHub Releases, not PyPI**.
@@ -55,13 +55,13 @@ The starter policy defaults to `fail_on: "high"`, so the warning remains visible
 
 ## Use it on a project
 
-The source tree now includes `pandacheck init`; it will ship in the next patch release. From a source checkout:
+Create a starter policy:
 
 ```bash
 pandacheck init
 ```
 
-If you are staying on the tagged v0.2.0 release, copy [the example policy](examples/pandacheck.policy.json5) instead.
+PandaCheck refuses to overwrite an existing policy unless you explicitly add `--force`.
 
 Review and commit `pandacheck.policy.json5`, then scan:
 
