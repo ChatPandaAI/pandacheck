@@ -55,11 +55,13 @@ The starter policy defaults to `fail_on: "high"`, so the warning remains visible
 
 ## Use it on a project
 
-Create a starter policy:
+The source tree now includes `pandacheck init`; it will ship in the next patch release. From a source checkout:
 
 ```bash
 pandacheck init
 ```
+
+If you are staying on the tagged v0.2.0 release, copy [the example policy](examples/pandacheck.policy.json5) instead.
 
 Review and commit `pandacheck.policy.json5`, then scan:
 
@@ -78,6 +80,7 @@ Machine-readable output is available with `--format json`.
 
 See:
 
+- [Quickstart](docs/quickstart.md)
 - [Project policy files](docs/policy.md)
 - [Regression mode](docs/regression.md)
 - [GitHub Actions](docs/github-actions.md)
