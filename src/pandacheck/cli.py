@@ -4,8 +4,6 @@ import argparse
 import json
 import sys
 
-from pathlib import Path
-
 from pandacheck import __version__
 from pandacheck.adapters import ADAPTERS
 from pandacheck.config import ConfigError, load_config
